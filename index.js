@@ -91,7 +91,8 @@ function renderLogin() {
 
 function renderMainApp(currentUser, db) {
   const isAdmin = currentUser === CONFIG.adminUser;
-  return `<!DOCTYPE html><html><head><meta name="viewport" content="width=device-width, initial-scale=1.0">
+  return `<!DOCTYPE html><html><head>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://www.youtube.com/iframe_api"></script>
   <style>
@@ -100,18 +101,24 @@ function renderMainApp(currentUser, db) {
     .vid-container { position: relative; padding-bottom: 56.25%; height: 0; background: #000; border-radius: 1.5rem; overflow: hidden; }
     .vid-container iframe, .vid-container video { position: absolute; top:0; left:0; width:100%; height:100%; border:0; }
     
-    #sidebar { transition: transform 0.3s ease-in-out; z-index: 60; }
+    #sidebar { transition: transform 0.3s ease-in-out; z-index: 100; }
     @media (max-width: 1024px) {
       #sidebar { position: fixed; left: 0; top: 0; bottom: 0; width: 85%; transform: translateX(-100%); background: #0b0f1a; border-right: 1px solid #1e293b; }
       #sidebar.open { transform: translateX(0); }
     }
-    #overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.8); z-index: 50; backdrop-filter: blur(4px); }
+    #overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.8); z-index: 90; backdrop-filter: blur(4px); }
     #overlay.open { display: block; }
     .player-hidden { display: none !important; }
+
+    /* Fix Input Melekat di Bawah */
+    .input-container {
+      padding-bottom: calc(1.5rem + env(safe-area-inset-bottom));
+    }
   </style></head>
-  <body class="bg-[#0b0f1a] text-slate-300 h-screen overflow-hidden font-sans">
+  <body class="bg-[#0b0f1a] text-slate-300 h-screen overflow-hidden font-sans flex flex-col">
     <div id="overlay" onclick="toggleSidebar()"></div>
-    <div class="flex items-center justify-between p-4 border-b border-slate-800 bg-[#0b0f1a] relative z-[70]">
+    
+    <div class="flex items-center justify-between p-4 border-b border-slate-800 bg-[#0b0f1a] relative z-[70] shrink-0">
       <div class="flex items-center gap-3">
         <button onclick="toggleSidebar()" class="p-2 bg-slate-900 rounded-xl border border-slate-800 lg:hidden hover:bg-slate-800 transition-all">
           <svg class="w-6 h-6 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path></svg>
@@ -120,14 +127,16 @@ function renderMainApp(currentUser, db) {
       </div>
       <div class="text-[9px] font-black uppercase text-slate-400 bg-slate-800/50 px-3 py-1.5 rounded-full border border-slate-700">${currentUser}</div>
     </div>
-    <div class="max-w-[1700px] mx-auto p-4 lg:p-6 grid lg:grid-cols-12 gap-6 h-[calc(100%-65px)]">
+
+    <div class="max-w-[1700px] mx-auto w-full p-4 lg:p-6 grid lg:grid-cols-12 gap-6 flex-1 min-h-0 overflow-hidden">
+      
       <div id="sidebar" class="lg:col-span-4 space-y-4 flex flex-col h-full overflow-hidden p-6 lg:p-0">
         <div class="bg-slate-900/50 p-6 rounded-[2.5rem] border border-slate-800 flex flex-col shrink-0">
           <div class="flex justify-between items-center mb-4">
             <h2 class="text-[10px] font-black uppercase text-blue-500 italic tracking-widest">Gallery</h2>
             <button onclick="togglePlayerUI()" id="btnToggle" class="text-[8px] bg-slate-800 hover:bg-slate-700 px-3 py-1 rounded-full font-black text-slate-400 uppercase">Hide Player</button>
           </div>
-          <div id="videoList" class="grid grid-cols-2 gap-3 max-h-[200px] overflow-y-auto mb-4 pr-2"></div>
+          <div id="videoList" class="grid grid-cols-2 gap-3 max-h-[180px] overflow-y-auto mb-4 pr-2"></div>
           ${isAdmin ? `
             <div class="pt-4 border-t border-slate-800 space-y-2 text-[10px]">
               <div class="grid grid-cols-2 gap-2">
@@ -144,7 +153,9 @@ function renderMainApp(currentUser, db) {
            <a href="/logout" class="mt-4 text-center text-[8px] font-black text-slate-600 hover:text-white uppercase transition-all">Logout Account</a>
         </div>
       </div>
+
       <div class="lg:col-span-8 flex flex-col h-full min-h-0 overflow-hidden">
+        
         <div id="playerSection" class="bg-slate-900/80 rounded-[2.5rem] border border-slate-800 shadow-2xl overflow-hidden shrink-0 mb-4">
           <div class="vid-container" id="playerTarget">
             <div id="ytPlayer"></div>
@@ -163,17 +174,20 @@ function renderMainApp(currentUser, db) {
             </div>
           </div>
         </div>
+
         <div class="bg-slate-900/40 rounded-[2.5rem] border border-slate-800 flex flex-col flex-1 min-h-0 backdrop-blur-md overflow-hidden">
            <div id="chatBox" class="flex-1 p-6 overflow-y-auto scroll-smooth flex flex-col gap-4"></div>
-           <div class="p-4 bg-black/40 border-t border-slate-800 shrink-0">
+           <div class="input-container p-4 bg-black/40 border-t border-slate-800 shrink-0">
              <form id="chatForm" class="flex gap-3">
                <input name="msg" autocomplete="off" placeholder="Write something..." class="flex-1 bg-slate-950 p-4 rounded-2xl border border-slate-800 outline-none focus:border-blue-600 text-sm">
                <button type="submit" class="bg-blue-600 px-8 rounded-2xl font-black text-[10px] uppercase hover:bg-blue-500">Send</button>
              </form>
            </div>
         </div>
+
       </div>
     </div>
+
     <script>
       let ytPlayer, activeType = 'none', isPlayerVisible = true;
       const nativePlayer = document.getElementById('nativePlayer');
@@ -249,7 +263,7 @@ function renderMainApp(currentUser, db) {
               </div>\`).join('');
             playlistLen = db.videoList.length;
           }
-          document.getElementById('userList').innerHTML = db.users.map(u => \`
+          document.getElementById('userList').innerHTML = (db.users || []).map(u => \`
             <div class="flex items-center gap-2 text-[10px] uppercase font-black px-3 py-1.5 rounded-xl bg-white/5 border border-white/5 shadow-sm">
               <div class="w-1.5 h-1.5 rounded-full \${u === "${currentUser}" ? 'bg-blue-500 animate-pulse' : 'bg-green-500'}"></div>
               <span>\${u}</span>
@@ -289,4 +303,4 @@ function renderMainApp(currentUser, db) {
       setInterval(update, 5000); update();
     </script>
   </body></html>`;
-}
+                          }
